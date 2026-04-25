@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="#060d1a" rx="32"/>
+  <circle cx="96" cy="75" r="28" fill="#f59e0b" opacity="0.9"/>
+  <circle cx="96" cy="75" r="18" fill="#fbbf24"/>
+  <!-- Sun rays -->
+  <g stroke="#f59e0b" stroke-width="3" stroke-linecap="round" opacity="0.7">
+    <line x1="96" y1="36" x2="96" y2="28"/>
+    <line x1="96" y1="114" x2="96" y2="122"/>
+    <line x1="57" y1="75" x2="49" y2="75"/>
+    <line x1="135" y1="75" x2="143" y2="75"/>
+    <line x1="69.4" y1="48.4" x2="63.7" y2="42.7"/>
+    <line x1="122.6" y1="101.6" x2="128.3" y2="107.3"/>
+    <line x1="122.6" y1="48.4" x2="128.3" y2="42.7"/>
+    <line x1="69.4" y1="101.6" x2="63.7" y2="107.3"/>
+  </g>
+  <!-- Cloud -->
+  <g fill="#00e5b0">
+    <circle cx="75" cy="118" r="18"/>
+    <circle cx="95" cy="110" r="22"/>
+    <circle cx="118" cy="116" r="16"/>
+    <rect x="57" y="116" width="77" height="22" rx="0"/>
+  </g>
+  <!-- Thermometer icon small -->
+  <rect x="85" y="140" width="22" height="10" rx="5" fill="#060d1a" opacity="0.5"/>
+  <text x="96" y="149" text-anchor="middle" font-family="monospace" font-size="8" fill="#00e5b0" font-weight="bold">°C</text>
+</svg>

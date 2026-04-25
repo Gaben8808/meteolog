@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#060d1a" />
+  <meta name="description" content="MeteoLog – személyes időjárás napló" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MeteoLog" />
+
+  <title>MeteoLog</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.svg" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Splash / Loading -->
+  <div id="splash">
+    <div class="splash-inner">
+      <div class="splash-icon">🌤️</div>
+      <div class="splash-title">MeteoLog</div>
+      <div class="splash-loader"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div id="auth-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title">Bejelentkezés</h2>
+        <p class="modal-subtitle">Fiók nélkül is használhatod vendégként</p>
+      </div>
+      <div id="auth-error" class="auth-error hidden"></div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Belépés</button>
+        <button class="auth-tab" data-tab="register">Regisztráció</button>
+      </div>
+      <div id="auth-login" class="auth-form">
+        <input type="email" id="login-email" class="input" placeholder="E-mail cím" autocomplete="email" />
+        <input type="password" id="login-password" class="input" placeholder="Jelszó" autocomplete="current-password" />
+        <button id="btn-login" class="btn btn-primary">Bejelentkezés</button>
+      </div>
+      <div id="auth-register" class="auth-form hidden">
+        <input type="text" id="reg-name" class="input" placeholder="Becenév" />
+        <input type="email" id="reg-email" class="input" placeholder="E-mail cím" autocomplete="email" />
+        <input type="password" id="reg-password" class="input" placeholder="Jelszó (min. 6 karakter)" autocomplete="new-password" />
+        <button id="btn-register" class="btn btn-primary">Fiók létrehozása</button>
+      </div>
+      <div class="auth-divider"><span>vagy</span></div>
+      <button id="btn-guest" class="btn btn-ghost">Folytatás vendégként</button>
+    </div>
+  </div>
+
+  <!-- App Shell -->
+  <div id="app" class="hidden">
+
+    <!-- Header -->
+    <header id="app-header">
+      <div class="header-left">
+        <span class="header-logo">🌤️</span>
+        <span class="header-title">MeteoLog</span>
+      </div>
+      <div class="header-right">
+        <div id="location-selector" class="location-chip">
+          <span class="loc-icon">📍</span>
+          <span id="active-location-name">Betöltés...</span>
+          <span class="loc-arrow">▾</span>
+        </div>
+        <button id="btn-header-auth" class="btn-icon" title="Fiók">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Location dropdown -->
+    <div id="location-dropdown" class="dropdown hidden">
+      <div id="location-list"></div>
+      <button id="btn-add-location-quick" class="dropdown-add">＋ Új helyszín</button>
+    </div>
+
+    <!-- Main content -->
+    <main id="app-main"></main>
+
+    <!-- Bottom Navigation -->
+    <nav id="app-nav">
+      <button class="nav-btn active" data-view="dashboard">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Főoldal</span>
+      </button>
+      <button class="nav-btn" data-view="history">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Előzmény</span>
+      </button>
+      <button class="nav-btn nav-btn-center" data-view="log">
+        <div class="nav-fab">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>Rögzítés</span>
+      </button>
+      <button class="nav-btn" data-view="charts">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span>Grafikonok</span>
+      </button>
+      <button class="nav-btn" data-view="locations">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>Helyszínek</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- Firebase (CDN modular) -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    import { FIREBASE_CONFIG } from './firebase-config.js';
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    window.__firebase = {
+      app,
+      auth: getAuth(app),
+      db: getFirestore(app)
+    };
+    window.dispatchEvent(new Event('firebase-ready'));
+  </script>
+
+  <!-- App JS (waits for firebase-ready) -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
