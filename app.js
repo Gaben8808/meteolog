@@ -2,13 +2,13 @@
 // MeteoLog – App (Router & Init)
 // ============================================================
 import { initAuth, loginEmail, registerEmail, loginAnonymous, logout, onUserChange, currentUser, getUserDisplayName, isGuest } from './auth.js';
-import { initDB, getLocations } from 'db.js';
-import { renderDashboard } from 'dashboard.js';
-import { renderLog }       from 'log.js';
-import { renderHistory }   from 'history.js';
-import { renderCharts }    from 'charts.js';
-import { renderLocations } from 'locations.js';
-import { showToast }       from 'utils.js';
+import { initDB, getLocations } from './db.js';
+import { renderDashboard } from './dashboard.js';
+import { renderLog }       from './log.js';
+import { renderHistory }   from './history.js';
+import { renderCharts }    from './charts.js';
+import { renderLocations } from './locations.js';
+import { showToast }       from './utils.js';
 
 // ── App State ────────────────────────────────────────────────
 export const AppState = {

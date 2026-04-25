@@ -1,9 +1,9 @@
 // ============================================================
 // MeteoLog – Locations View
 // ============================================================
-import { getLocations, addLocation, updateLocation, deleteLocation, getLocationReadingCount } from '../db.js';
-import { confirmDialog, showToast } from 'utils.js';
-import { AppState, setActiveLocation } from 'app.js';
+import { getLocations, addLocation, updateLocation, deleteLocation, getLocationReadingCount } from './db.js';
+import { confirmDialog, showToast } from './utils.js';
+import { AppState, setActiveLocation } from './app.js';
 
 const LOCATION_ICONS = ['🏠','🌳','🏔️','🌊','🏙️','🌾','🏕️','⛰️','🌺','❄️'];
 

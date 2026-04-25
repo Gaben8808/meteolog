@@ -4,19 +4,21 @@
 const CACHE = 'meteolog-v1';
 const STATIC = [
   './',
-  'index.html',
-  'manifest.json',
-  'style.css',
-  'app.js',
-  'auth.js',
-  'db.js',
-  'utils.js',
-  'dashboard.js',
-  'log.js',
-  'history.js',
-  'charts.js',
-  'locations.js',
-  'icon-192.svg',
+  './index.html',
+  './manifest.json',
+  './style.css',
+  './app.js',
+  './auth.js',
+  './db.js',
+  './utils.js',
+  './dashboard.js',
+  './log.js',
+  './history.js',
+  './charts.js',
+  './locations.js',
+  './firebase-config.js',
+  './icon-192.svg',
+  './icon-512.svg',
   'https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
 ];
@@ -36,7 +38,6 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Firebase / Google API calls → network only
   if (e.request.url.includes('firestore') ||
       e.request.url.includes('firebase') ||
       e.request.url.includes('googleapis')) {
