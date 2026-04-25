@@ -6,7 +6,7 @@ import {
   deleteDoc, query, orderBy, where, Timestamp,
   onSnapshot, limit, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { currentUser } from './auth.js';
+import { currentUser } from 'auth.js';
 
 let db;
 export function initDB(firestore) { db = firestore; }

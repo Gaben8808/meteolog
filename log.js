@@ -1,9 +1,9 @@
 // ============================================================
 // MeteoLog – Log / Entry View
 // ============================================================
-import { addReading } from '../db.js';
-import { getWeatherType, WEATHER_TYPES, WIND_DIRS, getBeaufort, showToast } from '../utils.js';
-import { AppState, navigate } from '../app.js';
+import { addReading } from 'db.js';
+import { getWeatherType, WEATHER_TYPES, WIND_DIRS, getBeaufort, showToast } from 'utils.js';
+import { AppState, navigate } from 'app.js';
 import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const state = {
