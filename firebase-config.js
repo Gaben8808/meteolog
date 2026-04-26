@@ -7,7 +7,7 @@
 // 4. Másold be az alábbi adatokat a saját projekted config-jából
 // ============================================================
 
-const firebaseConfig = {
+window.FIREBASE_CONFIG = {
   apiKey: "AIzaSyAs_LIo0IIaplNpNnli0rtTIAf1NfOsAbw",
   authDomain: "meteolog-94477.firebaseapp.com",
   projectId: "meteolog-94477",
