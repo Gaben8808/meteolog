@@ -139,7 +139,8 @@
       auth: getAuth(app),
       db: getFirestore(app)
     };
-    window.dispatchEvent(new Event('firebase-ready'));
+    // setTimeout(0) biztosítja hogy app.js module már feliratkozott az eseményre
+    setTimeout(() => window.dispatchEvent(new Event('firebase-ready')), 0);
   </script>
 
   <!-- App JS (waits for firebase-ready) -->

@@ -23,12 +23,20 @@ export function setActiveLocation(id) {
 }
 
 // ── Wait for Firebase ────────────────────────────────────────
-window.addEventListener('firebase-ready', () => {
+function initFirebase() {
   const { auth, db } = window.__firebase;
   initAuth(auth);
   initDB(db);
   boot();
-});
+}
+
+// Az ES modulok elhalasztva futnak – előfordulhat hogy a firebase-ready
+// esemény már elsült mire az app.js feliratkoznék rá, ezért mindkét esetet kezeljük
+if (window.__firebase) {
+  initFirebase();
+} else {
+  window.addEventListener('firebase-ready', initFirebase);
+}
 
 function boot() {
   onUserChange(user => {
