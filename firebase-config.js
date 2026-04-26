@@ -7,13 +7,14 @@
 // 4. Másold be az alábbi adatokat a saját projekted config-jából
 // ============================================================
 
-export const FIREBASE_CONFIG = {
-  apiKey:            "IDE_IRD_A_TE_API_KULCSODAT",
-  authDomain:        "projekt-azonosito.firebaseapp.com",
-  projectId:         "projekt-azonosito",
-  storageBucket:     "projekt-azonosito.appspot.com",
-  messagingSenderId: "123456789012",
-  appId:             "1:123456789012:web:abcdef1234567890"
+export const firebaseConfig = {
+  apiKey: "AIzaSyAs_LIo0IIaplNpNnli0rtTIAf1NfOsAbw",
+  authDomain: "meteolog-94477.firebaseapp.com",
+  projectId: "meteolog-94477",
+  storageBucket: "meteolog-94477.firebasestorage.app",
+  messagingSenderId: "480207574196",
+  appId: "1:480207574196:web:64996a3fcbd0e59494f3e1",
+  measurementId: "G-VYJB2P9578"
 };
 
 // ============================================================
