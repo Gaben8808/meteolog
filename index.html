@@ -130,7 +130,10 @@
 
   </div>
 
-  <!-- Firebase (CDN modular) -->
+  <!-- Firebase konfiguráció (sima script, nem modul) -->
+  <script src="firebase-config.js"></script>
+
+  <!-- Firebase inicializálás -->
   <script type="module">
     function showSplashError(msg) {
       const box = document.getElementById('splash-error');
@@ -139,16 +142,16 @@
     }
 
     try {
-      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-      const { getAuth }       = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-      const { getFirestore }  = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-      const { FIREBASE_CONFIG } = await import('./firebase-config.js');
-
-      if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.includes('IDE_IRD')) {
+      const cfg = window.FIREBASE_CONFIG;
+      if (!cfg || !cfg.apiKey || cfg.apiKey.includes('IDE_IRD')) {
         throw new Error('A firebase-config.js még nincs kitöltve! Cseréld ki az összes placeholder értéket a valódi Firebase adatokra.');
       }
 
-      const app = initializeApp(FIREBASE_CONFIG);
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+      const { getAuth }       = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+      const { getFirestore }  = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+
+      const app = initializeApp(cfg);
       window.__firebase = {
         app,
         auth: getAuth(app),
