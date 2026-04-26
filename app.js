@@ -23,6 +23,12 @@ export function setActiveLocation(id) {
 }
 
 // ── Wait for Firebase ────────────────────────────────────────
+function showSplashError(msg) {
+  const box = document.getElementById('splash-error');
+  const txt = document.getElementById('splash-error-msg');
+  if (box && txt) { txt.textContent = msg; box.style.display = 'block'; }
+}
+
 function initFirebase() {
   const { auth, db } = window.__firebase;
   initAuth(auth);
@@ -30,8 +36,6 @@ function initFirebase() {
   boot();
 }
 
-// Az ES modulok elhalasztva futnak – előfordulhat hogy a firebase-ready
-// esemény már elsült mire az app.js feliratkoznék rá, ezért mindkét esetet kezeljük
 if (window.__firebase) {
   initFirebase();
 } else {
@@ -39,15 +43,19 @@ if (window.__firebase) {
 }
 
 function boot() {
-  onUserChange(user => {
-    if (user) {
-      hideAuthModal();
-      showApp();
-      loadLocationChip();
-    } else {
-      showAuthModal();
-    }
-  });
+  try {
+    onUserChange(user => {
+      if (user) {
+        hideAuthModal();
+        showApp();
+        loadLocationChip();
+      } else {
+        showAuthModal();
+      }
+    });
+  } catch(e) {
+    showSplashError('boot() hiba: ' + e.message);
+  }
 }
 
 // ── Auth UI ──────────────────────────────────────────────────
