@@ -9,6 +9,7 @@ import {
   onAuthStateChanged,
   updateProfile
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { initProviders, handleRedirectResult } from './auth-providers.js';
 
 let auth;
 export let currentUser = null;
@@ -16,6 +17,9 @@ const listeners = [];
 
 export function initAuth(firebaseAuth) {
   auth = firebaseAuth;
+  initProviders(auth);
+  // Redirect alapú social login visszatérésének kezelése
+  handleRedirectResult().catch(e => console.warn('redirect result:', e.message));
   onAuthStateChanged(auth, user => {
     currentUser = user;
     listeners.forEach(fn => fn(user));

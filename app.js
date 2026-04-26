@@ -2,6 +2,7 @@
 // MeteoLog – App (Router & Init)
 // ============================================================
 import { initAuth, loginEmail, registerEmail, loginAnonymous, logout, onUserChange, currentUser, getUserDisplayName, isGuest } from './auth.js';
+import { signInWithGoogle, signInWithFacebook, signInWithApple, socialAuthErrorMsg } from './auth-providers.js';
 import { initDB, getLocations } from './db.js';
 import { renderDashboard } from './dashboard.js';
 import { renderLog }       from './log.js';
@@ -129,6 +130,27 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('auth-error').classList.remove('hidden');
     }
   });
+
+  // Social login gombok
+  async function handleSocialLogin(fn) {
+    const err = document.getElementById('auth-error');
+    err.classList.add('hidden');
+    try {
+      await fn();
+    } catch(e) {
+      err.textContent = socialAuthErrorMsg(e.code) || e.message;
+      err.classList.remove('hidden');
+    }
+  }
+
+  document.getElementById('btn-google')?.addEventListener('click', () =>
+    handleSocialLogin(signInWithGoogle));
+
+  document.getElementById('btn-facebook')?.addEventListener('click', () =>
+    handleSocialLogin(signInWithFacebook));
+
+  document.getElementById('btn-apple')?.addEventListener('click', () =>
+    handleSocialLogin(signInWithApple));
 
   // Header auth button
   document.getElementById('btn-header-auth')?.addEventListener('click', showAccountMenu);
