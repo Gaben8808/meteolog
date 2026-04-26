@@ -2,7 +2,7 @@
 // MeteoLog – App (Router & Init)
 // ============================================================
 import { initAuth, loginEmail, registerEmail, loginAnonymous, logout, onUserChange, currentUser, getUserDisplayName, isGuest } from './auth.js';
-import { signInWithGoogle, signInWithFacebook, signInWithApple, socialAuthErrorMsg } from './auth-providers.js';
+import { signInWithGoogle, signInWithFacebook, socialAuthErrorMsg } from './auth-providers.js';
 import { initDB, getLocations } from './db.js';
 import { renderDashboard } from './dashboard.js';
 import { renderLog }       from './log.js';
@@ -149,8 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-facebook')?.addEventListener('click', () =>
     handleSocialLogin(signInWithFacebook));
 
-  document.getElementById('btn-apple')?.addEventListener('click', () =>
-    handleSocialLogin(signInWithApple));
 
   // Header auth button
   document.getElementById('btn-header-auth')?.addEventListener('click', showAccountMenu);
