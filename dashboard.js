@@ -3,7 +3,7 @@
 // ============================================================
 import { getLatestReading, getStats, getReadings } from './db.js';
 import { getWeatherType, formatDate, formatTime, formatDateShort, showToast } from './utils.js';
-import { AppState } from './app.js';
+import { AppState } from './state.js';
 
 export async function renderDashboard(container) {
   container.innerHTML = `

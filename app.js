@@ -10,18 +10,12 @@ import { renderHistory }   from './history.js';
 import { renderCharts }    from './charts.js';
 import { renderLocations } from './locations.js';
 import { showToast }       from './utils.js';
+import { AppState, setActiveLocation } from './state.js';
 
-// ── App State ────────────────────────────────────────────────
-export const AppState = {
-  activeLocationId: localStorage.getItem('meteolog_loc') || null,
-  activeView: 'dashboard',
-};
-
-export function setActiveLocation(id) {
-  AppState.activeLocationId = id;
-  localStorage.setItem('meteolog_loc', id || '');
+// Helyszín változás esemény (state.js dispatch-eli)
+window.addEventListener('location-changed', () => {
   updateLocationChip();
-}
+});
 
 // ── Wait for Firebase ────────────────────────────────────────
 function showSplashError(msg) {

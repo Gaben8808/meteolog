@@ -3,7 +3,7 @@
 // ============================================================
 import { getReadingsForPeriod, getStats } from './db.js';
 import { getWeatherType, WEATHER_TYPES, formatDateShort, showToast } from './utils.js';
-import { AppState } from './app.js';
+import { AppState } from './state.js';
 
 let activeTab    = 'temp';
 let activePeriod = 30;
