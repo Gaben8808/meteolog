@@ -93,8 +93,9 @@ function showApp() {
 
 function hideSplash() {
   const splash = document.getElementById('splash');
+  if (!splash) return;
   splash.classList.add('fade-out');
-  setTimeout(() => splash.remove(), 600);
+  setTimeout(() => splash?.remove(), 600);
 }
 
 // Auth form events
