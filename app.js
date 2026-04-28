@@ -12,6 +12,27 @@ import { renderLocations } from './locations.js';
 import { showToast }       from './utils.js';
 import { AppState, setActiveLocation } from './state.js';
 
+// ── Window globálok (import-mentes view fájlok számára) ───────
+window.__appState = AppState;
+window.__setActiveLocation = (id) => {
+  setActiveLocation(id);
+  updateLocationChip();
+};
+window.__showToast = (msg, type) => {
+  // inline showToast mivel a utils import is körkörös lehet
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const t = document.createElement('div');
+  t.className = `toast ${type || 'success'}`;
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => t.remove(), 3100);
+};
+
 // Helyszín változás esemény (state.js dispatch-eli)
 window.addEventListener('location-changed', () => {
   updateLocationChip();
