@@ -85,6 +85,18 @@ async function loadLocations(container) {
   }
 }
 
+function showInlineError(wrap, msg) {
+  let errEl = wrap.querySelector('.loc-inline-error');
+  if (!errEl) {
+    errEl = document.createElement('div');
+    errEl.className = 'loc-inline-error';
+    errEl.style.cssText = 'background:#1a0a0a;border:1px solid #ef4444;color:#fca5a5;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px;';
+    const sheet = wrap.querySelector('.sheet');
+    if (sheet) sheet.insertBefore(errEl, sheet.firstChild);
+  }
+  errEl.textContent = '⚠️ ' + msg;
+}
+
 function showAddForm(container) {
   const wrap = container.querySelector('#loc-form-wrap');
   wrap.innerHTML = `
@@ -126,9 +138,14 @@ function showAddForm(container) {
   });
 
   wrap.querySelector('#btn-save-loc')?.addEventListener('click', async () => {
+    const btn  = wrap.querySelector('#btn-save-loc');
     const name = wrap.querySelector('#loc-name').value.trim();
     const desc = wrap.querySelector('#loc-desc').value.trim();
-    if (!name) { showToast('A névmező kötelező!', 'error'); return; }
+
+    if (!name) { showInlineError(wrap, 'A névmező kötelező!'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Mentés...';
 
     try {
       const ref = await addLocation({ name, description: desc, icon: selectedIcon });
@@ -137,7 +154,9 @@ function showAddForm(container) {
       wrap.innerHTML = '';
       await loadLocations(container);
     } catch(e) {
-      showToast('Hiba: ' + e.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Mentés';
+      showInlineError(wrap, e.message || String(e));
     }
   });
 }
