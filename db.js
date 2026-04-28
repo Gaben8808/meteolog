@@ -6,14 +6,18 @@ import {
   deleteDoc, query, orderBy, where, Timestamp,
   onSnapshot, limit, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { currentUser } from './auth.js';
-
 let db;
 export function initDB(firestore) { db = firestore; }
 
+function getCurrentUser() {
+  // Mindig a legfrissebb auth állapotot olvassuk
+  const user = window.__firebase?.auth?.currentUser;
+  if (!user) throw new Error('Nincs bejelentkezve – kérlek jelentkezz be újra.');
+  return user;
+}
+
 function userRef() {
-  if (!currentUser) throw new Error('Nincs bejelentkezve');
-  return doc(db, 'users', currentUser.uid);
+  return doc(db, 'users', getCurrentUser().uid);
 }
 function locsRef()     { return collection(userRef(), 'locations'); }
 function readingsRef() { return collection(userRef(), 'readings'); }
