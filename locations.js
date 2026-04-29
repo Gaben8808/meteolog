@@ -89,16 +89,15 @@ window._locReload = async function() {
   const wrap = document.getElementById('loc-list-wrap');
   if (!wrap) return;
   try {
-    const { collection, doc, getDocs, query, orderBy, where } =
+    const { collection, doc, getDocs, query, where } =
       await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
     const fb  = window.__firebase;
     const uid = fb.auth.currentUser?.uid;
     if (!uid) return;
 
-    const snap = await getDocs(query(
-      collection(doc(fb.db,'users',uid),'locations'),
-      orderBy('createdAt','asc')
-    ));
+    const snap = await getDocs(
+      collection(doc(fb.db,'users',uid),'locations')
+    );
     const locs = snap.docs.map(d=>({id:d.id,...d.data()}));
 
     if (!locs.length) {
