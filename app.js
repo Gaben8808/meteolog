@@ -14,6 +14,7 @@ import { AppState, setActiveLocation } from './state.js';
 
 // ── Window globálok (import-mentes view fájlok számára) ───────
 window.__appState = AppState;
+window.__navigate = (view) => navigate(view);
 window.__setActiveLocation = (id) => {
   setActiveLocation(id);
   updateLocationChip();
