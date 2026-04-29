@@ -1,8 +1,7 @@
 // ============================================================
-// MeteoLog – History View
+// MeteoLog – History View (közvetlen Firebase hívások)
 // ============================================================
-import { getMonthReadings, deleteReading } from './db.js';
-import { getWeatherType, formatTime, confirmDialog, showToast, HU_MONTHS, HU_DOW_SHORT, sameDay, toDateKey } from './utils.js';
+import { getWeatherType, formatTime, HU_MONTHS, HU_DOW_SHORT, sameDay, toDateKey, confirmDialog, showToast } from './utils.js';
 import { AppState } from './state.js';
 
 let curYear  = new Date().getFullYear();
@@ -20,7 +19,6 @@ export async function renderHistory(container) {
       </div>
       <div id="day-entries"></div>
     </div>`;
-
   await loadMonth(container);
 }
 
@@ -29,7 +27,25 @@ async function loadMonth(container) {
     container.querySelector('#cal').innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-secondary);">Válassz helyszínt!</div>`;
     return;
   }
-  monthData = await getMonthReadings(AppState.activeLocationId, curYear, curMonth);
+  try {
+    const { collection, doc, getDocs, query, where, orderBy, Timestamp } =
+      await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const fb  = window.__firebase;
+    const uid = fb.auth.currentUser?.uid;
+    const from = new Date(curYear, curMonth, 1);
+    const to   = new Date(curYear, curMonth + 1, 0, 23, 59, 59);
+    const snap = await getDocs(query(
+      collection(doc(fb.db, 'users', uid), 'readings'),
+      where('locationId', '==', AppState.activeLocationId),
+      where('timestamp', '>=', Timestamp.fromDate(from)),
+      where('timestamp', '<=', Timestamp.fromDate(to)),
+      orderBy('timestamp', 'desc')
+    ));
+    monthData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) {
+    monthData = [];
+    showToast('Hiba a betöltéskor: ' + e.message, 'error');
+  }
   renderCalendar(container);
   renderDayEntries(container, selectedDate);
 }
@@ -40,7 +56,6 @@ function renderCalendar(container) {
   const months = HU_MONTHS();
   const dows   = HU_DOW_SHORT();
 
-  // Build DOW-keyed map of readings
   const readingsByDay = {};
   monthData.forEach(r => {
     const d = r.timestamp?.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
@@ -50,13 +65,11 @@ function renderCalendar(container) {
   });
 
   const firstDay = new Date(curYear, curMonth, 1);
-  // HU week starts on Monday (1=Mon ... 0=Sun → put Sun last)
-  let startDow = (firstDay.getDay() + 6) % 7; // 0=Mon
+  let startDow = (firstDay.getDay() + 6) % 7;
   const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
   const today = new Date();
 
   let cells = '';
-  // prev month filler
   for (let i = 0; i < startDow; i++) {
     const d = new Date(curYear, curMonth, 1 - (startDow - i));
     cells += `<div class="cal-day other-month"><span class="cal-day-num">${d.getDate()}</span></div>`;
@@ -75,7 +88,6 @@ function renderCalendar(container) {
         ${wt ? `<span class="cal-day-emoji">${wt.emoji}</span>` : (rs.length ? '<span class="cal-day-dot"></span>' : '')}
       </div>`;
   }
-  // next month filler
   const filled = startDow + daysInMonth;
   const trailing = filled % 7 === 0 ? 0 : 7 - (filled % 7);
   for (let i = 1; i <= trailing; i++) {
@@ -135,7 +147,7 @@ function renderDayEntries(container, date) {
         r.precipitation?.observed ? `🌧️ ${r.precipitation.amount ?? 0} mm` : null,
       ].filter(Boolean).join('  ·  ');
       return `
-        <div class="history-entry" data-id="${r.id}">
+        <div class="history-entry">
           <div class="he-emoji">${wt.emoji}</div>
           <div class="he-data">
             <div class="he-temp">${r.temp != null ? r.temp + '°C' : wt.label}</div>
@@ -152,10 +164,14 @@ function renderDayEntries(container, date) {
 
   listEl.querySelectorAll('.he-delete').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const ok = await confirmDialog('Bejegyzés törlése', 'Biztosan törölni szeretnéd ezt a bejegyzést? Ez nem visszavonható.');
+      const ok = await confirmDialog('Bejegyzés törlése', 'Biztosan törölni szeretnéd? Ez nem visszavonható.');
       if (!ok) return;
       try {
-        await deleteReading(btn.dataset.id);
+        const { collection, doc, deleteDoc } =
+          await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const fb  = window.__firebase;
+        const uid = fb.auth.currentUser?.uid;
+        await deleteDoc(doc(collection(doc(fb.db, 'users', uid), 'readings'), btn.dataset.id));
         monthData = monthData.filter(r => r.id !== btn.dataset.id);
         showToast('Törölve!');
         renderCalendar(container);
