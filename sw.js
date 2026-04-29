@@ -1,7 +1,7 @@
 // ============================================================
 // MeteoLog – Service Worker
 // ============================================================
-const CACHE = 'meteolog-v4';
+const CACHE = 'meteolog-v5';
 const STATIC = [
   './',
   './index.html',
