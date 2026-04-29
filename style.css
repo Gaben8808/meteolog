@@ -34,7 +34,7 @@
   --font-body:    'DM Sans', sans-serif;
 
   /* Layout */
-  --header-h:  60px;
+  --header-h:  52px;
   --nav-h:     72px;
   --radius:    12px;
   --radius-lg: 20px;
@@ -270,6 +270,8 @@ body {
   padding-top: 8px;
   padding-bottom: env(safe-area-inset-bottom, 8px);
   flex-shrink: 0;
+  position: relative;
+  z-index: 50;
 }
 .nav-btn {
   flex: 1; display: flex; flex-direction: column;
@@ -283,7 +285,7 @@ body {
 .nav-btn.active { color: var(--accent); }
 .nav-btn:hover { color: var(--text-primary); }
 .nav-btn.active svg { stroke: var(--accent); }
-.nav-btn-center { margin-top: -28px; }
+.nav-btn-center { margin-top: -20px; }
 .nav-fab {
   width: 52px; height: 52px;
   background: var(--accent);
@@ -292,6 +294,8 @@ body {
   color: #000;
   box-shadow: 0 0 20px var(--accent-glow);
   transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  z-index: 10;
 }
 .nav-fab:hover, .nav-btn-center:hover .nav-fab { transform: scale(1.08); box-shadow: 0 0 28px var(--accent-glow); }
 .nav-btn-center span { color: var(--text-muted); }
@@ -398,8 +402,8 @@ textarea.input { min-height: 80px; resize: vertical; }
   line-height: 1;
 }
 .dash-temp-big .unit { font-size: 24px; color: var(--text-secondary); }
-.dash-weather-label { font-size: 15px; color: var(--text-secondary); margin-bottom: 4px; }
-.dash-time { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
+.dash-weather-label { font-size: 15px; color: var(--text-primary); margin-bottom: 4px; font-weight: 500; }
+.dash-time { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
 .dash-details {
   display: grid; grid-template-columns: repeat(3, 1fr);
   gap: 12px; margin-top: 16px;
