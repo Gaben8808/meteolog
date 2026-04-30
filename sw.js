@@ -1,7 +1,7 @@
 // ============================================================
 // MeteoLog – Service Worker
 // ============================================================
-const CACHE = 'meteolog-v10';
+const CACHE = 'meteolog-v11';
 const STATIC = [
   './',
   './index.html',
@@ -19,6 +19,7 @@ const STATIC = [
   './firebase-config.js',
   './icon-192.svg',
   './icon-512.svg',
+  './chart.min.js',
   // CDN fájlokat nem cache-eljük (tracking prevention miatt)
 ];
 
