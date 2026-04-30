@@ -25,8 +25,8 @@
   --red-dim:       rgba(239, 68, 68, 0.15);
 
   --text-primary:   #ddeeff;
-  --text-secondary: #7a9bbf;
-  --text-muted:     #3d5a7a;
+  --text-secondary: #a8c4dc;
+  --text-muted:     #6a8aaa;
 
   /* Typography */
   --font-display: 'Syne', sans-serif;
@@ -178,14 +178,17 @@ body {
 
 /* ── Header ─────────────────────────────────────────────────── */
 #app-header {
-  height: var(--header-h);
+  height: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: 8px;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
   display: grid;
   grid-template-columns: auto 1fr auto;
-  align-items: center;
+  align-items: end;
   gap: 8px;
-  padding: 0 12px;
+  padding-left: 12px;
+  padding-right: 12px;
   flex-shrink: 0;
   position: relative; z-index: 100;
   overflow: hidden;
@@ -331,7 +334,7 @@ body {
 textarea.input { min-height: 80px; resize: vertical; }
 
 .input-group { display: flex; gap: 8px; align-items: center; }
-.input-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; letter-spacing: 0.3px; }
+.input-label { font-size: 13px; color: var(--text-primary); opacity: 0.8; margin-bottom: 6px; letter-spacing: 0.3px; }
 .form-field { margin-bottom: 18px; }
 
 /* ── Number Stepper ──────────────────────────────────────────── */
@@ -420,7 +423,7 @@ textarea.input { min-height: 80px; resize: vertical; }
 .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
 .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 .stat-value { font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--accent); margin-top: 4px; }
-.stat-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.stat-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; opacity: 0.9; }
 
 .recent-list { display: flex; flex-direction: column; gap: 8px; }
 .recent-item {
@@ -433,9 +436,9 @@ textarea.input { min-height: 80px; resize: vertical; }
 .recent-emoji { font-size: 24px; }
 .recent-info { flex: 1; min-width: 0; }
 .recent-temp { font-family: var(--font-mono); font-size: 16px; font-weight: 600; }
-.recent-date { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.recent-date { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 .recent-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
-.badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); }
+.badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--bg-input); color: var(--text-primary); opacity: 0.85; border: 1px solid var(--border); }
 
 /* ═══════════════════════════════════════════════════════════
    LOG / ENTRY VIEW
@@ -491,7 +494,7 @@ textarea.input { min-height: 80px; resize: vertical; }
 .cal-nav:hover { color: var(--accent); }
 .cal-month { font-family: var(--font-display); font-weight: 700; font-size: 16px; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
-.cal-dow { text-align: center; font-size: 11px; color: var(--text-muted); padding: 8px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+.cal-dow { text-align: center; font-size: 11px; color: var(--text-secondary); padding: 8px 0; text-transform: uppercase; letter-spacing: 0.5px; }
 .cal-day {
   aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
   cursor: pointer; border-top: 1px solid var(--border); position: relative;
@@ -514,7 +517,7 @@ textarea.input { min-height: 80px; resize: vertical; }
 .he-emoji { font-size: 28px; }
 .he-data { }
 .he-temp { font-family: var(--font-mono); font-size: 20px; font-weight: 600; }
-.he-meta { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.he-meta { font-size: 12px; color: var(--text-primary); opacity: 0.75; margin-top: 4px; }
 .he-time { font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); text-align: right; }
 .he-delete { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 4px; }
 .he-delete:hover { color: var(--red); }
@@ -547,8 +550,8 @@ textarea.input { min-height: 80px; resize: vertical; }
 .loc-item-icon { font-size: 28px; }
 .loc-item-info { flex: 1; }
 .loc-item-name { font-weight: 600; font-size: 16px; }
-.loc-item-desc { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
-.loc-item-count { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.loc-item-desc { font-size: 13px; color: var(--text-primary); opacity: 0.75; margin-top: 3px; }
+.loc-item-count { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
 .loc-item-actions { display: flex; gap: 8px; }
 .loc-action { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; font-size: 16px; transition: color 0.2s; }
 .loc-action:hover { color: var(--text-primary); }
@@ -571,7 +574,7 @@ textarea.input { min-height: 80px; resize: vertical; }
 
 .wind-section { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: start; }
 
-.beaufort-label { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+.beaufort-label { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
 
 /* Slider */
 input[type=range] {
