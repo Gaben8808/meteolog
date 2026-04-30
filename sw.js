@@ -1,7 +1,7 @@
 // ============================================================
 // MeteoLog – Service Worker
 // ============================================================
-const CACHE = 'meteolog-v9';
+const CACHE = 'meteolog-v10';
 const STATIC = [
   './',
   './index.html',
@@ -19,8 +19,7 @@ const STATIC = [
   './firebase-config.js',
   './icon-192.svg',
   './icon-512.svg',
-  'https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap',
-  'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
+  // CDN fájlokat nem cache-eljük (tracking prevention miatt)
 ];
 
 self.addEventListener('install', e => {
