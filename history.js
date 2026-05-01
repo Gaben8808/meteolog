@@ -16,10 +16,17 @@ export async function renderHistory(container) {
       <div class="calendar" id="cal"></div>
       <div class="section-header" style="margin-top:20px;">
         <div class="section-title" id="day-title">Bejegyzések</div>
+        <button id="btn-export-month" class="btn btn-ghost btn-sm" style="gap:6px;">
+          <span>📥</span> Hónap CSV
+        </button>
       </div>
       <div id="day-entries"></div>
     </div>`;
   await loadMonth(container);
+
+  container.addEventListener('click', e => {
+    if (e.target.closest('#btn-export-month')) exportMonthCSV(container);
+  });
 }
 
 async function loadMonth(container) {
@@ -181,4 +188,63 @@ function renderDayEntries(container, date) {
       }
     });
   });
+}
+
+
+// ── Hónap export ──────────────────────────────────────────────
+async function exportMonthCSV(container) {
+  const btn = container.querySelector('#btn-export-month');
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Exportálás...'; }
+
+  try {
+    if (!monthData.length) {
+      showToast('Nincs adat ebben a hónapban.', 'error');
+      return;
+    }
+
+    const months = HU_MONTHS();
+    const headers = [
+      'Dátum', 'Idő', 'Időjárás', 'Hőmérséklet (°C)',
+      'Páratartalom (%)', 'Légnyomás (hPa)',
+      'Szélirány', 'Szélsebesség (km/h)', 'Beaufort',
+      'Csapadék', 'Csapadék (mm)', 'Megjegyzés'
+    ];
+
+    const rows = [...monthData].reverse().map(r => {
+      const d = r.timestamp?.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+      const wt = getWeatherType(r.weatherType);
+      return [
+        d.toLocaleDateString('hu-HU'),
+        d.toLocaleTimeString('hu-HU', { hour:'2-digit', minute:'2-digit' }),
+        wt.label,
+        r.temp != null ? r.temp : '',
+        r.humidity != null ? r.humidity : '',
+        r.pressure != null ? r.pressure : '',
+        r.wind?.direction || '',
+        r.wind?.speed != null ? r.wind.speed : '',
+        r.wind?.beaufort != null ? r.wind.beaufort : '',
+        r.precipitation?.observed ? 'igen' : 'nem',
+        r.precipitation?.observed ? (r.precipitation.amount || 0) : '',
+        r.notes ? `"${r.notes.replace(/"/g,'""')}"` : ''
+      ].join(';');
+    });
+
+    const csvContent = '﻿' + headers.join(';') + '\n' + rows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const filename = `meteolog_${months[curMonth]}_${curYear}.csv`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast(`✅ ${monthData.length} bejegyzés exportálva!`);
+  } catch(e) {
+    showToast('Export hiba: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span>📥</span> Hónap CSV'; }
+  }
 }

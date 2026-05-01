@@ -24,6 +24,22 @@ export async function renderCharts(container) {
         <button class="period-btn ${activePeriod===365?'active':''}" data-days="365">1 év</button>
       </div>
       <div id="chart-content"></div>
+
+      <!-- Export szekció -->
+      <div class="export-section">
+        <div class="section-header" style="margin-bottom:12px;">
+          <div class="section-title">📥 Exportálás</div>
+        </div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;line-height:1.6;">
+          Az aktuálisan kiválasztott időszak adatait tölti le CSV formátumban –
+          megnyitható Excelben és Google Sheetsben.
+        </p>
+        <button id="btn-export-csv" class="btn btn-ghost" style="gap:10px;">
+          <span style="font-size:18px;">📊</span> CSV letöltés (${activePeriod} nap)
+        </button>
+      </div>
+
+      <!-- Hónap export (előzmény nézethez hasonló, de itt az aktív időszakra) -->
     </div>`;
 
   Object.values(charts).forEach(c => c?.destroy());
@@ -45,6 +61,9 @@ export async function renderCharts(container) {
   });
 
   await loadChart(container);
+
+  // Export gomb
+  container.querySelector('#btn-export-csv')?.addEventListener('click', () => exportCSV(container));
 }
 
 async function getReadings() {
@@ -163,4 +182,86 @@ function renderStatsTab(el, readings) {
       <div class="stats-item"><div class="stats-item-val">${precipSum.toFixed(1)} mm</div><div class="stats-item-lbl">Összes csapadék</div></div>
       <div class="stats-item"><div class="stats-item-val">${readings.length}</div><div class="stats-item-lbl">Összes bejegyzés</div></div>
     </div>`;
+}
+
+
+// ── Export funkció ────────────────────────────────────────────
+async function exportCSV(container) {
+  const btn = container.querySelector('#btn-export-csv');
+  if (!btn) return;
+  btn.disabled = true;
+  btn.innerHTML = '<span style="font-size:18px;">⏳</span> Exportálás...';
+
+  try {
+    const readings = await getReadings();
+    if (!readings.length) {
+      showToast('Nincs exportálható adat ebben az időszakban.', 'error');
+      return;
+    }
+
+    // Helyszín nevének lekérése
+    let locationName = 'ismeretlen';
+    try {
+      const { collection, doc, getDoc } =
+        await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+      const fb  = window.__firebase;
+      const uid = fb.auth.currentUser?.uid;
+      const locSnap = await getDoc(doc(collection(doc(fb.db,'users',uid),'locations'), AppState.activeLocationId));
+      if (locSnap.exists()) locationName = locSnap.data().name;
+    } catch(e) {}
+
+    // CSV fejléc
+    const headers = [
+      'Dátum', 'Idő', 'Időjárás', 'Hőmérséklet (°C)',
+      'Páratartalom (%)', 'Légnyomás (hPa)',
+      'Szélirány', 'Szélsebesség (km/h)', 'Beaufort',
+      'Csapadék', 'Csapadék (mm)', 'Megjegyzés'
+    ];
+
+    // CSV sorok
+    const rows = readings.map(r => {
+      const d = r.timestamp?.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+      const wt = getWeatherType(r.weatherType);
+      return [
+        d.toLocaleDateString('hu-HU'),
+        d.toLocaleTimeString('hu-HU', { hour:'2-digit', minute:'2-digit' }),
+        wt.label,
+        r.temp != null ? r.temp : '',
+        r.humidity != null ? r.humidity : '',
+        r.pressure != null ? r.pressure : '',
+        r.wind?.direction || '',
+        r.wind?.speed != null ? r.wind.speed : '',
+        r.wind?.beaufort != null ? r.wind.beaufort : '',
+        r.precipitation?.observed ? 'igen' : 'nem',
+        r.precipitation?.observed ? (r.precipitation.amount || 0) : '',
+        r.notes ? `"${r.notes.replace(/"/g,'""')}"` : ''
+      ].join(';');
+    });
+
+    // BOM + CSV összeállítás (UTF-8 Excel kompatibilis)
+    const csvContent = '﻿' + headers.join(';') + '
+' + rows.join('
+');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+
+    // Letöltés
+    const dateStr = new Date().toISOString().slice(0,10);
+    const filename = `meteolog_${locationName}_${activePeriod}nap_${dateStr}.csv`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast(`✅ ${readings.length} bejegyzés exportálva!`);
+
+  } catch(e) {
+    showToast('Export hiba: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<span style="font-size:18px;">📊</span> CSV letöltés (${activePeriod} nap)`;
+  }
 }
