@@ -229,7 +229,7 @@ async function exportMonthCSV(container) {
       ].join(';');
     });
 
-    const csvContent = '﻿' + headers.join(';') + '\n' + rows.join('\n');
+    const csvContent = '\uFEFF' + headers.join(';') + '\n' + rows.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const filename = `meteolog_${months[curMonth]}_${curYear}.csv`;

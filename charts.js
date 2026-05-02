@@ -239,9 +239,7 @@ async function exportCSV(container) {
     });
 
     // BOM + CSV összeállítás (UTF-8 Excel kompatibilis)
-    const csvContent = '﻿' + headers.join(';') + '
-' + rows.join('
-');
+    const csvContent = '\uFEFF' + headers.join(';') + '\n' + rows.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
 
