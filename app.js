@@ -11,6 +11,7 @@ import { renderCharts }    from './charts.js';
 import { renderLocations } from './locations.js';
 import { showToast }       from './utils.js';
 import { AppState, setActiveLocation } from './state.js';
+import { restoreReminder } from './reminder.js';
 
 // ── Window globálok (import-mentes view fájlok számára) ───────
 window.__appState = AppState;
@@ -60,6 +61,7 @@ if (window.__firebase) {
 }
 
 function boot() {
+  restoreReminder();
   try {
     onUserChange(user => {
       if (user) {
@@ -297,6 +299,7 @@ function showAccountMenu() {
     <div class="ap-name">${name}</div>
     <div class="ap-sub">${guest ? '👤 Vendég fiók' : '✉️ Regisztrált felhasználó'}</div>
     ${guest ? `<button class="ap-btn" id="ap-register">📧 Regisztráció</button>` : ''}
+    <button class="ap-btn" id="ap-reminder">🔔 Napi emlékeztető</button>
     <button class="ap-btn" id="ap-logout" style="color:var(--red);">🚪 Kijelentkezés</button>`;
 
   document.body.appendChild(popup);
@@ -304,6 +307,11 @@ function showAccountMenu() {
   popup.querySelector('#ap-logout')?.addEventListener('click', async () => {
     popup.remove();
     await logout();
+  });
+
+  popup.querySelector('#ap-reminder')?.addEventListener('click', () => {
+    popup.remove();
+    showReminderModal();
   });
   popup.querySelector('#ap-register')?.addEventListener('click', () => {
     popup.remove();
@@ -317,4 +325,120 @@ function showAccountMenu() {
       document.removeEventListener('click', handler);
     }
   }), 50);
+}
+
+// ── Emlékeztető modal ─────────────────────────────────────────
+async function showReminderModal() {
+  const { getReminderSettings, saveReminderSettings,
+          requestNotificationPermission, scheduleReminder,
+          cancelReminder } = await import('./reminder.js');
+
+  const settings = getReminderSettings();
+  const perm = Notification.permission ?? 'default';
+
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-box" style="height:auto;max-height:90dvh;border-radius:var(--radius-lg);border:1px solid var(--border-light);top:50%;transform:translateY(-50%);position:absolute;left:0;right:0;margin:0 auto;max-width:420px;padding:28px 24px;">
+      <div class="auth-logo" style="margin-bottom:20px;">
+        <span style="font-size:28px;">🔔</span>
+        <span style="font-family:var(--font-display);font-weight:700;font-size:20px;">Napi emlékeztető</span>
+      </div>
+
+      ${perm === 'denied' ? `
+        <div class="auth-error" style="display:block;margin-bottom:16px;">
+          ⚠️ Az értesítések le vannak tiltva. Engedélyezd a telefon beállításaiban:
+          Beállítások → Safari → Értesítések → MeteoLog
+        </div>` : ''}
+
+      <div style="margin-bottom:20px;">
+        <div class="toggle-row">
+          <span style="font-size:15px;font-weight:500;">Emlékeztető bekapcsolása</span>
+          <div class="toggle ${settings.enabled ? 'on' : ''}" id="rem-toggle"></div>
+        </div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-top:8px;line-height:1.5;">
+          Naponta értesítést küld ha még nem rögzítettél időjárást.
+          ${perm !== 'granted' ? '(Engedélyt fog kérni az értesítésekhez.)' : '✅ Értesítések engedélyezve.'}
+        </p>
+      </div>
+
+      <div id="rem-time-section" style="${settings.enabled ? '' : 'opacity:0.4;pointer-events:none;'}">
+        <div class="input-label" style="margin-bottom:10px;">⏰ Értesítés időpontja</div>
+        <div style="display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:20px;">
+          <div class="stepper" style="max-width:160px;">
+            <button class="stepper-btn" id="rem-hour-dec">−</button>
+            <div class="stepper-value" id="rem-hour-val">${String(settings.hour).padStart(2,'0')}<span class="stepper-unit">ó</span></div>
+            <button class="stepper-btn" id="rem-hour-inc">+</button>
+          </div>
+          <span style="font-size:24px;color:var(--accent);font-weight:700;">:</span>
+          <div class="stepper" style="max-width:160px;">
+            <button class="stepper-btn" id="rem-min-dec">−</button>
+            <div class="stepper-value" id="rem-min-val">${String(settings.minute).padStart(2,'0')}<span class="stepper-unit">p</span></div>
+            <button class="stepper-btn" id="rem-min-inc">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" id="rem-cancel">Mégse</button>
+        <button class="btn btn-primary" id="rem-save">Mentés</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+
+  let hour    = settings.hour;
+  let minute  = settings.minute;
+  let enabled = settings.enabled;
+
+  // Toggle
+  modal.querySelector('#rem-toggle').addEventListener('click', () => {
+    enabled = !enabled;
+    modal.querySelector('#rem-toggle').classList.toggle('on', enabled);
+    modal.querySelector('#rem-time-section').style.opacity = enabled ? '1' : '0.4';
+    modal.querySelector('#rem-time-section').style.pointerEvents = enabled ? 'auto' : 'none';
+  });
+
+  // Óra stepper
+  modal.querySelector('#rem-hour-dec').addEventListener('click', () => {
+    hour = (hour - 1 + 24) % 24;
+    modal.querySelector('#rem-hour-val').innerHTML = String(hour).padStart(2,'0') + '<span class="stepper-unit">ó</span>';
+  });
+  modal.querySelector('#rem-hour-inc').addEventListener('click', () => {
+    hour = (hour + 1) % 24;
+    modal.querySelector('#rem-hour-val').innerHTML = String(hour).padStart(2,'0') + '<span class="stepper-unit">ó</span>';
+  });
+
+  // Perc stepper (5 perces lépésközzel)
+  modal.querySelector('#rem-min-dec').addEventListener('click', () => {
+    minute = (minute - 5 + 60) % 60;
+    modal.querySelector('#rem-min-val').innerHTML = String(minute).padStart(2,'0') + '<span class="stepper-unit">p</span>';
+  });
+  modal.querySelector('#rem-min-inc').addEventListener('click', () => {
+    minute = (minute + 5) % 60;
+    modal.querySelector('#rem-min-val').innerHTML = String(minute).padStart(2,'0') + '<span class="stepper-unit">p</span>';
+  });
+
+  // Mégse
+  modal.querySelector('#rem-cancel').addEventListener('click', () => modal.remove());
+
+  // Mentés
+  modal.querySelector('#rem-save').addEventListener('click', async () => {
+    if (enabled) {
+      const perm = await requestNotificationPermission();
+      if (!perm.ok) {
+        showToast(perm.reason, 'error');
+        modal.remove();
+        return;
+      }
+      saveReminderSettings({ enabled: true, hour, minute });
+      scheduleReminder(hour, minute);
+      showToast(`✅ Emlékeztető beállítva: ${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}`);
+    } else {
+      saveReminderSettings({ enabled: false, hour, minute });
+      cancelReminder();
+      showToast('Emlékeztető kikapcsolva.');
+    }
+    modal.remove();
+  });
 }

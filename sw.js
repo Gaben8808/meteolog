@@ -1,5 +1,5 @@
 // MeteoLog – Service Worker v14
-const CACHE = 'meteolog-v15';
+const CACHE = 'meteolog-v16';
 
 // Csak az alapvető fájlokat cache-eljük, hibatűrően
 const CORE = [
