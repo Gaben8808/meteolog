@@ -173,9 +173,11 @@ window._locReload = async function() {
           ${loc.description?`<div class="loc-item-desc">${loc.description}</div>`:''}
         </div>
         <div class="loc-item-actions">
+          ${loc.isPublic ? '<button class="loc-action" title="Link megosztása" onclick="window._locShare(\'' + loc.id + '\',\'' + loc.name.replace(/'/g,"\\'") + '\')">🔗</button>' : ''}
           <button class="loc-action" onclick="window._locSelect('${loc.id}')">${loc.id===activeId?'✅':'○'}</button>
           <button class="loc-action del" onclick="window._locDelete('${loc.id}','${loc.name.replace(/'/g,"\\'")}')">🗑️</button>
         </div>
+      </div>`).join('')}</div>`;
       </div>`).join('')}</div>`;
   } catch(e) {
     const wrap2 = document.getElementById('loc-list-wrap');
