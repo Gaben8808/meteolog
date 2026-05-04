@@ -178,7 +178,6 @@ window._locReload = async function() {
           <button class="loc-action del" onclick="window._locDelete('${loc.id}','${loc.name.replace(/'/g,"\\'")}')">🗑️</button>
         </div>
       </div>`).join('')}</div>`;
-      </div>`).join('')}</div>`;
   } catch(e) {
     const wrap2 = document.getElementById('loc-list-wrap');
     if(wrap2) wrap2.innerHTML=`<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Hiba</h3><p>${e.message}</p></div>`;
