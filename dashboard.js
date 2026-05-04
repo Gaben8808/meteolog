@@ -10,9 +10,10 @@ export async function renderDashboard(container) {
       <div id="dash-hero">
         <div class="dash-hero"><div class="dash-no-data"><div class="dash-no-data-icon">⏳</div><p>Betöltés...</p></div></div>
       </div>
-      <div class="stat-row">
+      <div class="stat-row-3">
         <div class="stat-card"><div class="stat-label">MIN HŐMÉRSÉKLET</div><div class="stat-value" id="stat-min">–</div><div class="stat-sub">30 nap</div></div>
         <div class="stat-card"><div class="stat-label">MAX HŐMÉRSÉKLET</div><div class="stat-value" id="stat-max">–</div><div class="stat-sub">30 nap</div></div>
+        <div class="stat-card"><div class="stat-label">ÁTLAG HŐMÉRSÉKLET</div><div class="stat-value" id="stat-avg">–</div><div class="stat-sub">30 nap</div></div>
       </div>
       <div class="section-header">
         <div class="section-title">Utolsó bejegyzések</div>
@@ -72,8 +73,10 @@ export async function renderDashboard(container) {
 
     const minEl = container.querySelector('#stat-min');
     const maxEl = container.querySelector('#stat-max');
+    const avgEl = container.querySelector('#stat-avg');
     if (minEl) minEl.textContent = temps.length ? Math.min(...temps) + '°C' : '–';
     if (maxEl) maxEl.textContent = temps.length ? Math.max(...temps) + '°C' : '–';
+    if (avgEl) avgEl.textContent = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) + '°C' : '–';
 
     renderRecent(container.querySelector('#dash-recent'), recent);
 
