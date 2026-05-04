@@ -5,6 +5,30 @@
 const ICONS = ['🏠','🌳','🏔️','🌊','🏙️','🌾','🏕️','⛰️','🌺','❄️'];
 
 // Globális függvények – ezeket az onclick attribútumok hívják
+window._locIsPublic = false;
+window._locTogglePublic = function() {
+  window._locIsPublic = !window._locIsPublic;
+  const t = document.getElementById('loc-public-toggle');
+  if (t) t.classList.toggle('on', window._locIsPublic);
+};
+
+window._locGetGPS = function() {
+  const btn = document.getElementById('btn-get-gps');
+  if (btn) { btn.textContent = '📡 Lekérés...'; btn.disabled = true; }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = document.getElementById('loc-lat');
+      const lon = document.getElementById('loc-lon');
+      if (lat) lat.value = pos.coords.latitude.toFixed(4);
+      if (lon) lon.value = pos.coords.longitude.toFixed(4);
+      if (btn) { btn.textContent = '✅ Pozíció lekérve!'; btn.disabled = false; }
+    },
+    err => {
+      if (btn) { btn.textContent = '⚠️ Hiba: ' + err.message; btn.disabled = false; }
+    }
+  );
+};
+
 window._locSelectIcon = function(ic) {
   window._locSelectedIcon = ic;
   document.querySelectorAll('.icon-btn').forEach(b =>
@@ -13,6 +37,7 @@ window._locSelectIcon = function(ic) {
 
 window._locShowForm = function() {
   window._locSelectedIcon = ICONS[0];
+  window._locIsPublic = false;
   document.getElementById('loc-form-wrap').style.display = 'block';
   document.getElementById('btn-show-add-loc').style.display = 'none';
 };
@@ -46,10 +71,31 @@ window._locSave = async function() {
     const { collection, doc, addDoc, serverTimestamp } =
       await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
+    const lat = parseFloat(document.getElementById('loc-lat')?.value) || null;
+    const lon = parseFloat(document.getElementById('loc-lon')?.value) || null;
+    const isPublic = window._locIsPublic || false;
+
+    const locData = {
+      name, description: desc,
+      icon: window._locSelectedIcon || ICONS[0],
+      lat, lon, isPublic,
+      createdAt: serverTimestamp()
+    };
+
     const ref = await addDoc(
       collection(doc(fb.db,'users',uid),'locations'),
-      { name, description:desc, icon: window._locSelectedIcon||ICONS[0], createdAt: serverTimestamp() }
+      locData
     );
+
+    // Ha nyilvános, elmentjük a publicLocations gyűjteménybe is
+    if (isPublic && lat && lon) {
+      const { setDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+      await setDoc(doc(fb.db, 'publicLocations', ref.id), {
+        ownerUid: uid, locationId: ref.id,
+        name, description: desc, icon: locData.icon,
+        lat, lon, createdAt: serverTimestamp()
+      });
+    }
 
     window.__setActiveLocation(ref.id);
     window.__showToast('✅ Helyszín hozzáadva!');
@@ -77,6 +123,19 @@ window._locDelete = async function(id, name) {
     await window._locReload();
   } catch(e) {
     window.__showToast('Hiba: '+e.message,'error');
+  }
+};
+
+window._locShare = function(id, name) {
+  const base = window.location.origin + window.location.pathname;
+  const url  = base + '?loc=' + id;
+  if (navigator.share) {
+    navigator.share({ title: 'MeteoLog – ' + name, url });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(url);
+    window.__showToast('🔗 Link vágólapra másolva!');
+  } else {
+    prompt('Másold ki a linket:', url);
   }
 };
 
@@ -153,6 +212,25 @@ export async function renderLocations(container) {
           <div class="form-field">
             <div class="input-label">Leírás (nem kötelező)</div>
             <input type="text" id="loc-desc" class="input" placeholder="Pl. terasz, árnyékos oldal..." />
+          </div>
+          <div class="form-field">
+            <div class="input-label">📍 GPS koordináták (Open-Meteo időjáráshoz)</div>
+            <div style="display:flex;gap:8px;">
+              <input type="number" id="loc-lat" class="input" placeholder="Szélesség pl. 47.1234" step="0.0001" />
+              <input type="number" id="loc-lon" class="input" placeholder="Hosszúság pl. 17.9012" step="0.0001" />
+            </div>
+            <button type="button" id="btn-get-gps" class="btn btn-ghost btn-sm" style="margin-top:8px;width:auto;" onclick="window._locGetGPS()">
+              📡 Jelenlegi pozíció lekérése
+            </button>
+          </div>
+          <div class="form-field">
+            <div class="toggle-row">
+              <span class="input-label" style="margin:0;">🌐 Nyilvános helyszín</span>
+              <div class="toggle" id="loc-public-toggle" onclick="window._locTogglePublic()"></div>
+            </div>
+            <p style="font-size:12px;color:var(--text-secondary);margin-top:6px;line-height:1.5;">
+              Ha bekapcsolod, megosztható linket kapsz amit bárki megtekinthet.
+            </p>
           </div>
           <div style="display:flex;gap:10px;margin-top:8px;">
             <button type="button" class="btn btn-ghost" onclick="window._locHideForm()">Mégse</button>
