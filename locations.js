@@ -126,7 +126,12 @@ window._locDelete = async function(id, name) {
   }
 };
 
-window._locShare = function(id, name) {
+window._locOpen = function(id) {
+  const base = window.location.origin + window.location.pathname;
+  window.open(base + '?loc=' + id, '_blank');
+};
+
+window._locShareLink = function(id, name) {
   const base = window.location.origin + window.location.pathname;
   const url  = base + '?loc=' + id;
   if (navigator.share) {
@@ -134,8 +139,6 @@ window._locShare = function(id, name) {
   } else if (navigator.clipboard) {
     navigator.clipboard.writeText(url);
     window.__showToast('🔗 Link vágólapra másolva!');
-  } else {
-    prompt('Másold ki a linket:', url);
   }
 };
 
@@ -173,7 +176,7 @@ window._locReload = async function() {
           ${loc.description?`<div class="loc-item-desc">${loc.description}</div>`:''}
         </div>
         <div class="loc-item-actions">
-          ${loc.isPublic ? '<button class="loc-action" title="Link megosztása" onclick="window._locShare(\'' + loc.id + '\',\'' + loc.name.replace(/'/g,"\\'") + '\')">🔗</button>' : ''}
+          ${loc.isPublic ? '<button class="loc-action" title="Megnyitás" style="font-size:18px;" onclick="window._locOpen(\'' + loc.id + '\')">🌐</button><button class="loc-action" title="Megosztás" onclick="window._locShareLink(\'' + loc.id + '\',\'' + loc.name.replace(/'/g,"\\\'")+\'\')">🔗</button>' : ''}
           <button class="loc-action" onclick="window._locSelect('${loc.id}')">${loc.id===activeId?'✅':'○'}</button>
           <button class="loc-action del" onclick="window._locDelete('${loc.id}','${loc.name.replace(/'/g,"\\'")}')">🗑️</button>
         </div>
