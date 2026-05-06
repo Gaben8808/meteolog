@@ -4,7 +4,28 @@
 import { fetchCurrentWeather, fetchForecast, getWMOInfo } from './weather-api.js';
 import { getWeatherType, formatDate, formatTime } from './utils.js';
 
+// Overlay-be renderelés (PWA belső nézet)
+export async function renderPublicViewInto(container, locationId) {
+  await loadAndRender(container, locationId);
+}
+
+// URL paraméterből renderelés (böngészőben)
 export async function renderPublicView(locationId) {
+  document.body.style.overflowY = 'auto';
+  document.body.style.height    = 'auto';
+  document.body.innerHTML = `
+    <div style="background:var(--bg-primary);font-family:var(--font-body);color:var(--text-primary);max-width:480px;margin:0 auto;padding-bottom:40px;">
+      <div style="background:var(--bg-secondary);border-bottom:1px solid var(--border);padding:max(env(safe-area-inset-top,0px),16px) 16px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10;">
+        <span style="font-size:22px;">🌤️</span>
+        <span style="font-family:var(--font-display);font-weight:800;font-size:18px;color:var(--accent);">MeteoLog</span>
+        <span style="margin-left:auto;font-size:12px;color:var(--text-muted);">Publikus állomás</span>
+      </div>
+      <div id="pub-content" style="padding:16px;"></div>
+    </div>`;
+  await loadAndRender(document.getElementById('pub-content'), locationId);
+}
+
+async function loadAndRender(container, locationId) {
   // PWA shell elrejtése, publikus nézet beállítása
   document.body.style.background = 'var(--bg-primary)';
   document.body.style.overflowY  = 'auto';
@@ -38,6 +59,12 @@ export async function renderPublicView(locationId) {
       </div>
     </div>`;
 
+  const content = container;
+  content.innerHTML = `
+    <div style="text-align:center;padding:48px 0;color:var(--text-secondary);">
+      <div style="font-size:40px;margin-bottom:12px;">⏳</div><p>Betöltés...</p>
+    </div>`;
+
   try {
     const { initializeApp, getApps } =
       await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
@@ -52,7 +79,7 @@ export async function renderPublicView(locationId) {
     // Publikus helyszín betöltése
     const pubSnap = await getDoc(doc(db, 'publicLocations', locationId));
     if (!pubSnap.exists()) {
-      showError('Ez a helyszín nem létezik vagy nem nyilvános.');
+      showError('Ez a helyszín nem létezik vagy nem nyilvános.', content);
       return;
     }
 
@@ -76,7 +103,6 @@ export async function renderPublicView(locationId) {
     const readings = readingsSnap ? readingsSnap.docs.map(d => ({ id: d.id, ...d.data() })) : [];
     const latest   = readings[0] || null;
 
-    const content = document.getElementById('pub-content');
     content.innerHTML = `
       <!-- Helyszín fejléc -->
       <div style="text-align:center;margin-bottom:20px;padding-top:8px;">
@@ -96,7 +122,7 @@ export async function renderPublicView(locationId) {
       </div>`;
 
   } catch(e) {
-    showError('Hiba a betöltésnél: ' + e.message);
+    showError('Hiba a betöltésnél: ' + e.message, content);
   }
 }
 
@@ -238,9 +264,8 @@ function renderCTA() {
     </div>`;
 }
 
-function showError(msg) {
-  const content = document.getElementById('pub-content');
-  if (content) content.innerHTML = `
+function showError(msg, container) {
+  if (container) container.innerHTML = `
     <div style="text-align:center;padding:48px 16px;color:var(--text-secondary);">
       <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
       <div style="font-size:16px;color:var(--text-primary);margin-bottom:8px;">Hiba</div>

@@ -127,8 +127,51 @@ window._locDelete = async function(id, name) {
 };
 
 window._locOpen = function(id) {
-  const base = window.location.origin + window.location.pathname;
-  window.open(base + '?loc=' + id, '_blank');
+  // PWA-ban belső overlay - nem nyit új lapot
+  const overlay = document.createElement('div');
+  overlay.id = 'pub-overlay';
+  overlay.style.cssText = `
+    position: fixed; inset: 0; z-index: 999;
+    background: var(--bg-primary);
+    overflow-y: auto; overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  `;
+
+  // Bezárás gomb
+  overlay.innerHTML = `
+    <div style="
+      position: sticky; top: 0; z-index: 10;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: max(env(safe-area-inset-top,0px),12px) 16px 12px;
+      display: flex; align-items: center; gap: 12px;
+    ">
+      <button onclick="document.getElementById('pub-overlay').remove()" style="
+        background: var(--bg-card); border: 1px solid var(--border);
+        border-radius: 50%; width: 36px; height: 36px;
+        color: var(--text-primary); font-size: 18px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; flex-shrink: 0;
+      ">✕</button>
+      <span style="font-family:var(--font-display);font-weight:800;font-size:17px;color:var(--accent);">🌤️ MeteoLog</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--text-muted);">Publikus állomás</span>
+    </div>
+    <div id="pub-overlay-content" style="padding:16px;padding-bottom:40px;">
+      <div style="text-align:center;padding:48px 0;color:var(--text-secondary);">
+        <div style="font-size:40px;margin-bottom:12px;">⏳</div>
+        <p>Betöltés...</p>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+
+  // Public view betöltése az overlaybe
+  import('./public-view.js').then(m => m.renderPublicViewInto(
+    overlay.querySelector('#pub-overlay-content'), id
+  )).catch(e => {
+    overlay.querySelector('#pub-overlay-content').innerHTML =
+      '<p style="color:var(--red);padding:24px;">Hiba: ' + e.message + '</p>';
+  });
 };
 
 window._locShareLink = function(id, name) {
