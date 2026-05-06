@@ -175,12 +175,44 @@ window._locReload = async function() {
           <div class="loc-item-name">${loc.name}</div>
           ${loc.description?`<div class="loc-item-desc">${loc.description}</div>`:''}
         </div>
-        <div class="loc-item-actions">
-          ${loc.isPublic ? '<button class="loc-action" title="Megnyitás" style="font-size:18px;" onclick="window._locOpen(\'' + loc.id + '\')">🌐</button><button class="loc-action" title="Megosztás" onclick="window._locShareLink(\'' + loc.id + '\',\'' + loc.name.replace(/'/g,"\\\'")+\'\')">🔗</button>' : ''}
-          <button class="loc-action" onclick="window._locSelect('${loc.id}')">${loc.id===activeId?'✅':'○'}</button>
-          <button class="loc-action del" onclick="window._locDelete('${loc.id}','${loc.name.replace(/'/g,"\\'")}')">🗑️</button>
-        </div>
+        <div class="loc-item-actions" id="loc-actions-${loc.id}"></div>
       </div>`).join('')}</div>`;
+
+    // Gombok hozzáadása JS-sel
+    locs.forEach(loc => {
+      const actionsEl = wrap.querySelector('#loc-actions-' + loc.id);
+      if (!actionsEl) return;
+      const activeId = window.__appState?.activeLocationId;
+
+      if (loc.isPublic) {
+        const openBtn = document.createElement('button');
+        openBtn.className = 'loc-action';
+        openBtn.title = 'Megnyitás';
+        openBtn.textContent = '🌐';
+        openBtn.onclick = () => window._locOpen(loc.id);
+        actionsEl.appendChild(openBtn);
+
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'loc-action';
+        shareBtn.title = 'Megosztás';
+        shareBtn.textContent = '🔗';
+        shareBtn.onclick = () => window._locShareLink(loc.id, loc.name);
+        actionsEl.appendChild(shareBtn);
+      }
+
+      const selectBtn = document.createElement('button');
+      selectBtn.className = 'loc-action';
+      selectBtn.textContent = loc.id === activeId ? '✅' : '○';
+      selectBtn.onclick = () => window._locSelect(loc.id);
+      actionsEl.appendChild(selectBtn);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'loc-action del';
+      delBtn.textContent = '🗑️';
+      delBtn.onclick = () => window._locDelete(loc.id, loc.name);
+      actionsEl.appendChild(delBtn);
+    });
+
   } catch(e) {
     const wrap2 = document.getElementById('loc-list-wrap');
     if(wrap2) wrap2.innerHTML=`<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Hiba</h3><p>${e.message}</p></div>`;
